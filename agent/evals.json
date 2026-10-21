@@ -1,0 +1,119 @@
+{
+  "cases": [
+    {
+      "id": 1,
+      "question": "What is the capital of France?",
+      "rubric": "Response must correctly identify Paris as the capital of France.",
+      "difficulty": "easy",
+      "min_tool_calls": 0
+    },
+    {
+      "id": 2,
+      "question": "Who wrote the play Romeo and Juliet?",
+      "rubric": "Response must correctly identify William Shakespeare as the author of Romeo and Juliet.",
+      "difficulty": "easy",
+      "min_tool_calls": 0
+    },
+    {
+      "id": 3,
+      "question": "What does HTTP stand for?",
+      "rubric": "Response must correctly state that HTTP stands for HyperText Transfer Protocol.",
+      "difficulty": "easy",
+      "min_tool_calls": 0
+    },
+    {
+      "id": 4,
+      "question": "What is the speed of light in meters per second?",
+      "rubric": "Response must state the speed of light as approximately 299,792,458 m/s or equivalently ~3 × 10⁸ m/s. Equivalent scientific notation or approximations are acceptable.",
+      "difficulty": "easy",
+      "min_tool_calls": 0
+    },
+    {
+      "id": 5,
+      "question": "What programming language is Python named after?",
+      "rubric": "Response must correctly state that Python was named after Monty Python's Flying Circus, a British comedy TV show — not after the snake.",
+      "difficulty": "easy",
+      "min_tool_calls": 0
+    },
+    {
+      "id": 6,
+      "question": "What is the latest stable version of Python and what are the most notable features introduced in that release?",
+      "rubric": "Response must state the specific version number of the current Python stable release (obtained via web search, not recalled) and describe at least 2 concrete features introduced in that version.",
+      "difficulty": "medium",
+      "min_tool_calls": 2,
+      "notes": "Requires web search to find the version, then reading the release notes page for feature details"
+    },
+    {
+      "id": 7,
+      "question": "Find the current top trending repository on GitHub and explain what it does.",
+      "rubric": "Response must name a specific GitHub repository, include its URL, and explain what the project does — based on reading the repo page, not recalled from training data.",
+      "difficulty": "medium",
+      "min_tool_calls": 2,
+      "notes": "Requires searching for trending repos, then reading the repo page for a description"
+    },
+    {
+      "id": 8,
+      "question": "Who won the most recent Nobel Prize in Physics and what was the prize awarded for?",
+      "rubric": "Response must name the specific winner(s) of the most recent Nobel Prize in Physics and accurately describe what the prize was awarded for, sourced from the Nobel Prize website or a reliable news source.",
+      "difficulty": "medium",
+      "min_tool_calls": 2,
+      "notes": "Requires search to find the winner, then reading the Nobel Prize page for the full citation"
+    },
+    {
+      "id": 9,
+      "question": "What are Anthropic's most recent Claude models and how do their context windows compare?",
+      "rubric": "Response must name specific Claude model identifiers and provide their context window sizes in tokens, with information sourced from Anthropic's documentation rather than recalled from training data.",
+      "difficulty": "medium",
+      "min_tool_calls": 2,
+      "notes": "Requires searching for the model lineup, then reading the documentation page for spec details"
+    },
+    {
+      "id": 10,
+      "question": "What were the main announcements from the most recent Apple WWDC and when did it take place?",
+      "rubric": "Response must identify the specific year and date of the most recent WWDC, name at least 3 concrete announcements from the event, and source the information from a news article or Apple's website.",
+      "difficulty": "medium",
+      "min_tool_calls": 2,
+      "notes": "Requires search to find the event, then reading the recap page for specific announcements"
+    },
+    {
+      "id": 11,
+      "question": "What companies are currently in the Dow Jones Industrial Average and which one has the highest stock price today?",
+      "rubric": "Response must identify which DJIA company has the highest stock price today, state the specific dollar figure, and source the price from a live financial data page rather than recalling it.",
+      "difficulty": "hard",
+      "min_tool_calls": 3,
+      "notes": "Requires search for current DJIA composition, search or read for today's prices, then synthesis"
+    },
+    {
+      "id": 12,
+      "question": "Find two recent peer-reviewed papers on large language model hallucinations and summarize their findings.",
+      "rubric": "Response must reference two distinct papers by title (and ideally authors or publication venue), and accurately summarize the specific key finding or contribution of each — not generic descriptions of hallucination.",
+      "difficulty": "hard",
+      "min_tool_calls": 3,
+      "notes": "Requires search for papers, then reading two separate paper pages for their findings"
+    },
+    {
+      "id": 13,
+      "question": "What is the current Metacritic score of the highest-rated video game released in 2025 so far, and what do critics say about it?",
+      "rubric": "Response must name a specific game released in 2025, state its Metacritic score as a number, and include at least one specific point critics made about it — sourced from the Metacritic page, not recalled.",
+      "difficulty": "hard",
+      "min_tool_calls": 3,
+      "notes": "Requires searching for top-rated 2025 games, then reading the Metacritic page for score and critic quotes"
+    },
+    {
+      "id": 14,
+      "question": "Compare the visa requirements for US citizens traveling to Japan vs South Korea: which is easier to enter and why?",
+      "rubric": "Response must accurately state the visa-free stay duration for US citizens in both Japan and South Korea, compare the two, and base the information on current official or authoritative travel sources.",
+      "difficulty": "hard",
+      "min_tool_calls": 3,
+      "notes": "Requires separate searches or page reads for each country's entry requirements, then comparison"
+    },
+    {
+      "id": 15,
+      "question": "What is SpaceX's current launch manifest for the next 30 days and what payloads are involved?",
+      "rubric": "Response must list at least 2 specific upcoming SpaceX launches with their payloads and approximate dates, sourced from a launch schedule page — not recalled from training data.",
+      "difficulty": "hard",
+      "min_tool_calls": 3,
+      "notes": "Requires search for upcoming launches, then reading the schedule page and possibly individual mission pages"
+    }
+  ]
+}

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Agent</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
+
+    /* Top bar */
+    #topbar { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid #1e1e1e; background: #111; flex-shrink: 0; }
+    #topbar h1 { font-size: 1rem; font-weight: 600; color: #fff; flex: 1; }
+    select, input[type=text] { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 0.35rem 0.6rem; color: #ccc; font-size: 0.8rem; outline: none; }
+    #topbar label { font-size: 0.78rem; color: #555; }
+
+    /* Upload strip */
+    #upload-strip { padding: 0.5rem 1.25rem; border-bottom: 1px solid #1a1a1a; background: #111; display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+    #drop-zone { border: 1px dashed #2a2a2a; border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.8rem; color: #555; cursor: pointer; transition: border-color 0.15s, color 0.15s; white-space: nowrap; }
+    #drop-zone:hover, #drop-zone.drag-over { border-color: #444; color: #999; }
+    #file-input { display: none; }
+    #upload-status { font-size: 0.78rem; color: #666; flex: 1; }
+
+    /* Document panel */
+    #doc-panel { background: #111; border-bottom: 1px solid #1a1a1a; padding: 0.5rem 1.25rem; flex-shrink: 0; display: none; }
+    #doc-panel-header { font-size: 0.75rem; color: #444; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+    #doc-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .doc-chip { display: flex; align-items: center; gap: 0.4rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px; padding: 0.25rem 0.6rem 0.25rem 0.75rem; font-size: 0.78rem; }
+    .doc-chip .doc-name { color: #aaa; }
+    .doc-chip .doc-summary { color: #555; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .doc-chip .del-btn { background: none; border: none; color: #444; cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; transition: color 0.15s; }
+    .doc-chip .del-btn:hover { color: #f44336; }
+
+    /* Conversation */
+    #conversation { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .msg { max-width: 720px; width: 100%; }
+    .msg.user { align-self: flex-end; }
+    .msg.assistant { align-self: flex-start; }
+
+    .bubble { padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.92rem; line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+    .user .bubble { background: #1e3a5f; color: #cce4ff; border-bottom-right-radius: 3px; }
+    .assistant .bubble { background: #1a1a1a; color: #ddd; border-bottom-left-radius: 3px; border: 1px solid #2a2a2a; }
+
+    .tools-log { margin-top: 0.4rem; font-size: 0.75rem; color: #555; font-family: monospace; }
+    .tools-log div { margin-bottom: 0.15rem; }
+
+    /* Grounding (collapsible) */
+    .grounding { margin-top: 0.5rem; }
+    .grounding summary { font-size: 0.75rem; color: #555; cursor: pointer; user-select: none; list-style: none; }
+    .grounding summary::before { content: '▶ '; }
+    details[open] .grounding summary::before { content: '▼ '; }
+    .g-bar { font-size: 0.75rem; color: #666; margin: 0.4rem 0; }
+    .g-claim { margin-bottom: 0.5rem; padding: 0.5rem 0.65rem; border-radius: 6px; border-left: 3px solid #333; background: #111; font-size: 0.8rem; }
+    .g-claim .verdict { font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+    .g-claim .claim-text { color: #ccc; margin-bottom: 0.15rem; }
+    .g-claim .source { color: #555; font-size: 0.72rem; }
+    .g-claim .explanation { color: #777; margin-top: 0.15rem; }
+    .SUPPORTED   { border-left-color: #2d6a2d; } .SUPPORTED .verdict   { color: #4caf50; }
+    .PARTIALLY   { border-left-color: #7a5c00; } .PARTIALLY .verdict   { color: #ffc107; }
+    .UNSUPPORTED { border-left-color: #6a2d2d; } .UNSUPPORTED .verdict { color: #f44336; }
+    .SOURCE_NOT_FOUND { border-left-color: #333; } .SOURCE_NOT_FOUND .verdict { color: #777; }
+
+    /* Input bar */
+    #inputbar { padding: 0.75rem 1.25rem; border-top: 1px solid #1e1e1e; background: #111; display: flex; gap: 0.5rem; flex-shrink: 0; }
+    #query-input { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 0.6rem 0.9rem; color: #e0e0e0; font-size: 0.92rem; outline: none; resize: none; max-height: 120px; font-family: inherit; }
+    #query-input:focus { border-color: #3a3a3a; }
+    #ask-btn { background: #1e3a5f; border: none; border-radius: 8px; padding: 0.6rem 1.1rem; color: #7ab8f5; font-size: 0.9rem; cursor: pointer; transition: background 0.15s; align-self: flex-end; }
+    #ask-btn:hover:not(:disabled) { background: #24477a; }
+    #ask-btn:disabled { opacity: 0.4; cursor: default; }
+
+    #spinner { display: inline-block; width: 10px; height: 10px; border: 2px solid #333; border-top-color: #7ab8f5; border-radius: 50%; animation: spin 0.7s linear infinite; margin-left: 6px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="topbar">
+    <h1>Research Agent</h1>
+    <label>Backend</label>
+    <select id="backend-select">
+      <option value="anthropic">Anthropic</option>
+      <option value="ollama">Ollama</option>
+      <option value="openai">OpenAI</option>
+    </select>
+    <label>Model</label>
+    <input type="text" id="model-input" placeholder="default" style="width:120px" />
+    <button id="new-chat-btn" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:0.35rem 0.75rem;color:#888;font-size:0.8rem;cursor:pointer;">New chat</button>
+  </div>
+
+  <div id="upload-strip">
+    <div id="drop-zone">＋ Upload document (.md / .pdf)</div>
+    <input type="file" id="file-input" accept=".md,.pdf" />
+    <div id="upload-status"></div>
+  </div>
+
+  <div id="doc-panel">
+    <div id="doc-panel-header">Indexed documents <span id="doc-count" style="color:#444;font-size:0.75rem;"></span></div>
+    <div id="doc-list"></div>
+  </div>
+
+  <div id="conversation"></div>
+
+  <div id="inputbar">
+    <textarea id="query-input" rows="1" placeholder="Ask anything…"></textarea>
+    <button id="ask-btn">Send</button>
+  </div>
+
+<script>
+  let sessionId = null;
+  let isStreaming = false;
+  let currentBubble = null;
+  let currentToolsLog = null;
+
+  const conv        = document.getElementById('conversation');
+  const queryInput  = document.getElementById('query-input');
+  const askBtn      = document.getElementById('ask-btn');
+  const dropZone    = document.getElementById('drop-zone');
+  const fileInput   = document.getElementById('file-input');
+  const uploadStatus = document.getElementById('upload-status');
+
+  // ── Upload ──────────────────────────────────────────────────────────────────
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+  // ── New chat ─────────────────────────────────────────────────────────────────
+  document.getElementById('new-chat-btn').addEventListener('click', () => {
+    sessionId = null;
+    conv.innerHTML = '';
+  });
+
+  // ── Send ─────────────────────────────────────────────────────────────────────
+  queryInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askBtn.click(); }
+  });
+  queryInput.addEventListener('input', () => {
+    queryInput.style.height = 'auto';
+    queryInput.style.height = Math.min(queryInput.scrollHeight, 120) + 'px';
+  });
+
+  askBtn.addEventListener('click', async () => {
+    const query = queryInput.value.trim();
+    if (!query || isStreaming) return;
+
+    isStreaming = true;
+    askBtn.disabled = true;
+    queryInput.value = '';
+    queryInput.style.height = 'auto';
+
+    addUserBubble(query);
+    const { bubble, toolsLog } = addAssistantBubble();
+    currentBubble = bubble;
+    currentToolsLog = toolsLog;
+
+    const body = {
+      query,
+      backend: document.getElementById('backend-select').value,
+      model: document.getElementById('model-input').value.trim() || null,
+      session_id: sessionId,
+    };
+
+    try {
+      const res = await fetch('/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          handleEvent(JSON.parse(line.slice(6)));
+        }
+      }
+    } catch (e) {
+      currentBubble.textContent += `\n\nError: ${e.message}`;
+    }
+
+    isStreaming = false;
+    askBtn.disabled = false;
+    currentBubble = null;
+    currentToolsLog = null;
+  });
+
+  function handleEvent(event) {
+    if (event.type === 'session_id') {
+      sessionId = event.session_id;
+    } else if (event.type === 'token') {
+      currentBubble.textContent += event.content;
+      scrollToBottom();
+    } else if (event.type === 'tool') {
+      const el = document.createElement('div');
+      el.textContent = `⚙ ${event.name}(${JSON.stringify(event.input)})`;
+      currentToolsLog.appendChild(el);
+    } else if (event.type === 'grounding') {
+      attachGrounding(currentToolsLog.closest('.msg'), event.report);
+    } else if (event.type === 'error') {
+      currentBubble.textContent += `\n\nError: ${event.message}`;
+    }
+  }
+
+  // ── DOM helpers ──────────────────────────────────────────────────────────────
+  function addUserBubble(text) {
+    const msg = document.createElement('div');
+    msg.className = 'msg user';
+    msg.innerHTML = `<div class="bubble">${escHtml(text)}</div>`;
+    conv.appendChild(msg);
+    scrollToBottom();
+  }
+
+  function addAssistantBubble() {
+    const msg = document.createElement('div');
+    msg.className = 'msg assistant';
+    const spinnerHtml = `<span id="spinner"></span>`;
+    msg.innerHTML = `<div class="bubble">${spinnerHtml}</div><div class="tools-log"></div>`;
+    conv.appendChild(msg);
+    scrollToBottom();
+    const bubble = msg.querySelector('.bubble');
+    // Remove spinner once first token arrives — handled by appending text
+    const spinner = bubble.querySelector('#spinner');
+    const origAppend = bubble.textContent;
+    const observer = new MutationObserver(() => { if (spinner.parentNode) spinner.remove(); observer.disconnect(); });
+    observer.observe(bubble, { childList: true, subtree: true, characterData: true });
+    return { bubble, toolsLog: msg.querySelector('.tools-log') };
+  }
+
+  function addSystemNote(text) {
+    const el = document.createElement('div');
+    el.style.cssText = 'text-align:center;font-size:0.75rem;color:#444;padding:0.25rem 0;';
+    el.textContent = text;
+    conv.appendChild(el);
+    scrollToBottom();
+  }
+
+  function attachGrounding(msgEl, report) {
+    if (!report || report.claims_checked === 0) return;
+    const c = report.counts;
+    const details = document.createElement('details');
+    details.className = 'grounding';
+    details.innerHTML = `<summary>Grounding: ${report.claims_checked} claims — ✅${c.SUPPORTED} ⚠️${c.PARTIALLY} ❌${c.UNSUPPORTED} ❓${c.SOURCE_NOT_FOUND}</summary>`;
+    for (const r of report.results) {
+      const el = document.createElement('div');
+      el.className = `g-claim ${r.verdict}`;
+      el.innerHTML = `
+        <div class="verdict">${r.verdict.replace('_',' ')}</div>
+        <div class="claim-text">${escHtml(r.claim)}</div>
+        <div class="source">→ ${escHtml(r.source)}</div>
+        ${r.explanation ? `<div class="explanation">${escHtml(r.explanation)}</div>` : ''}
+      `;
+      details.appendChild(el);
+    }
+    msgEl.appendChild(details);
+  }
+
+  function scrollToBottom() { conv.scrollTop = conv.scrollHeight; }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Document panel ───────────────────────────────────────────────────────────
+  const docPanel = document.getElementById('doc-panel');
+  const docList  = document.getElementById('doc-list');
+  const docCount = document.getElementById('doc-count');
+
+  async function loadDocuments() {
+    try {
+      const res = await fetch('/documents');
+      const docs = await res.json();
+      renderDocs(docs);
+    } catch (_) {}
+  }
+
+  function renderDocs(docs) {
+    docList.innerHTML = '';
+    docCount.textContent = docs.length ? `(${docs.length})` : '';
+    docPanel.style.display = docs.length ? 'block' : 'none';
+    for (const doc of docs) {
+      const chip = document.createElement('div');
+      chip.className = 'doc-chip';
+      chip.dataset.filename = doc.filename;
+      chip.innerHTML = `
+        <span class="doc-name">${escHtml(doc.filename)}</span>
+        <span class="doc-summary" title="${escHtml(doc.summary)}">${escHtml(doc.summary)}</span>
+        <button class="del-btn" title="Remove from index">✕</button>
+      `;
+      chip.querySelector('.del-btn').addEventListener('click', () => removeDoc(doc.filename, chip));
+      docList.appendChild(chip);
+    }
+  }
+
+  async function removeDoc(filename, chipEl) {
+    chipEl.style.opacity = '0.4';
+    try {
+      const res = await fetch(`/documents/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.detail); }
+      chipEl.remove();
+      const remaining = docList.querySelectorAll('.doc-chip').length;
+      docCount.textContent = remaining ? `(${remaining})` : '';
+      if (!remaining) docPanel.style.display = 'none';
+      addSystemNote(`Removed ${filename} from index`);
+    } catch (e) {
+      chipEl.style.opacity = '1';
+      addSystemNote(`Failed to remove ${filename}: ${e.message}`);
+    }
+  }
+
+  async function handleFileWithPanel(file) {
+    if (!file) return;
+    uploadStatus.textContent = `Uploading ${file.name}…`;
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('/ingest', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || res.statusText);
+      uploadStatus.textContent = `✓ ${data.filename} — ${data.summary}`;
+      addSystemNote(`Indexed ${data.filename}: ${data.summary}`);
+      await loadDocuments();
+    } catch (e) {
+      uploadStatus.textContent = `✗ ${e.message}`;
+    }
+  }
+
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFileWithPanel(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change', () => handleFileWithPanel(fileInput.files[0]));
+
+  loadDocuments();
+</script>
+</body>
+</html>

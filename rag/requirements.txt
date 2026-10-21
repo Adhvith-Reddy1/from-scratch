@@ -1,0 +1,17 @@
+# RAG pipeline — Python 3.12
+# Embeddings and the local judge/generator models run through Ollama.
+
+# Vector store
+chromadb==1.5.9
+numpy==2.4.6
+httpx==0.28.1
+
+# Document loaders
+pypdf==6.14.2
+mrkdwn-analysis==0.2.3      # imported as `mrkdwn_analysis`
+trafilatura==2.1.0
+
+# LLM clients: query expansion, reranking, contextual chunking, eval judges
+openai==2.41.1             # pointed at a local Ollama endpoint
+ollama==0.6.2
+anthropic==0.109.1

@@ -1,0 +1,22 @@
+# CLI + web agent — Python 3.12
+
+# Agent core
+anthropic==0.109.1
+openai==2.41.1             # also used for the local Ollama backend
+tavily-python==0.7.26      # imported as `tavily`
+httpx==0.28.1
+trafilatura==2.1.0
+tiktoken==0.13.0
+click==8.4.1
+python-dotenv==1.2.2
+
+# Web UI (FastAPI)
+fastapi==0.138.1
+uvicorn==0.49.0
+python-multipart==0.0.32   # required for document uploads
+
+# Reuses the RAG pipeline in ../rag (vector store + document loaders)
+chromadb==1.5.9
+numpy==2.4.6
+pypdf==6.14.2
+mrkdwn-analysis==0.2.3
